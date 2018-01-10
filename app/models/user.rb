@@ -3,10 +3,13 @@ class User < ApplicationRecord
   before_create :create_activation_digest
 	validates :name, presence: true, length: {maximum: 50}
 	validates :email, presence: true, length: {maximum: 255}, format: {with: /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i}, uniqueness: {case_sensitive: false}
-  has_secure_password
   validates :password, presence: true, length: {minimum: 6}, allow_nil: true
 
+  has_secure_password
+
   attr_accessor :remember_token, :activation_token, :reset_token
+
+  has_many :microposts, dependent: :destroy
 
   #Returns hash digest of given string. 
   def self.digest(string)
@@ -63,6 +66,10 @@ class User < ApplicationRecord
 
   def password_reset_expired?
     reset_sent_at < 2.hours.ago
+  end
+
+  def feed 
+    Micropost.where("user_id = ?", id)
   end
 
 
